@@ -5,19 +5,19 @@ using System.Text;
 
 namespace Another6502
 {
-    class ClockMs : IClock
+    class ClockMsI : Clock
     {
-        Stopwatch _stopwatch;
+        //private Stopwatch _stopwatch;
 
-        public Int64 AverageKhz { get { return GetAverageKhz(); } }
-        public float AverageMhz { get { return GetAverageMhz(); } }
-        public Int64 CurrentKhz { get { return GetCurrentKhz(); } }
-        public Int64 Ticks { get; private set; }
-        public Double ElapsedMilliseconds { get { return _stopwatch.ElapsedMilliseconds; } }
+        //public new Int64 AverageKhz { get { return GetAverageKhz(); } }
+        //public new float AverageMhz { get { return GetAverageMhz(); } }
+        //public new Int64 CurrentKhz { get { return GetCurrentKhz(); } }
+        //public new Int64 Ticks { get; private set; }
+        //public new Double ElapsedMilliseconds { get { return _stopwatch.ElapsedMilliseconds; } }
         //public Int64 ElapsedTicks { get { return _stopwatch.ElapsedTicks; } }
-        public bool IsRunning { get; private set; }
+        //public new bool IsRunning { get; private set; }
 
-        private int _targetKhz = 9000;
+        private int _targetKhz = 10000;
 
         private static int _tickRecordSize = 20000;
         private static int _tickRecordSampleSize = 4;
@@ -26,40 +26,40 @@ namespace Another6502
         private Int64[] _tickRecordBank = new Int64[_tickRecordSize];
         private double _nextTickRecordMs = 0;
 
-        public Int64 TickRecord { get { return _tickRecord; } }
+        public new Int64 TickRecord { get { return _tickRecord; } }
 
-        public ClockMs()
+        public ClockMsI()
         {
-            _stopwatch = new Stopwatch();
+            //_stopwatch = new Stopwatch();
             IsRunning = false;
         }
 
-        public void Reset()
-        {
-            Stop();
-            Ticks = 0;
-            _stopwatch.Reset();
-        }
+        //public void Reset()
+        //{
+        //    Stop();
+        //    Ticks = 0;
+        //    _stopwatch.Reset();
+        //}
 
-        public void Start()
-        {
-            IsRunning = true;
-            _stopwatch.Start();
-        }
+        //public void Start()
+        //{
+        //    IsRunning = true;
+        //    _stopwatch.Start();
+        //}
 
-        public void Stop()
-        {
-            _stopwatch.Stop();
-            IsRunning = false;
-        }
+        //public void Stop()
+        //{
+        //    _stopwatch.Stop();
+        //    IsRunning = false;
+        //}
 
-        public void SetTargetKhz(int khz)
-        {
-            if (khz < 1) return;
-            _targetKhz = khz;
-        }
+        //public void SetTargetKhz(int khz)
+        //{
+        //    if (khz < 1) return;
+        //    _targetKhz = khz;
+        //}
 
-        public void Tick()
+        public override void Tick()
         {
             if (!IsRunning || Throttling()) return;
 
@@ -73,28 +73,28 @@ namespace Another6502
         {
             //if (_tickRecordBank[_tickRecordSize - 1] == 0) return false; // We haven't yet filled up our array so we can't calculate throttling
 
-            if (GetAverageKhz() > _targetKhz)
-            {
-                //System.Threading.Thread.Sleep(50); // Doesn't work well
-                return true;
-            }
+            //if (GetAverageKhz() > _targetKhz)
+            //{
+            //    //System.Threading.Thread.Sleep(50); // Doesn't work well
+            //    return true;
+            //}
             return false;
         }
 
-        private Int64 GetAverageKhz()
+        protected override Int64 GetAverageKhz()
         {
             if (_stopwatch.ElapsedMilliseconds == 0) return 0;
             return Ticks / _stopwatch.ElapsedMilliseconds;
         }
 
-        private float GetAverageMhz()
+        protected override float GetAverageMhz()
         {
             if (_stopwatch.ElapsedMilliseconds == 0) return 0;
             //return (Ticks / 1000) / _stopwatch.ElapsedMilliseconds;
             return (Ticks / 1000) / (float)_stopwatch.Elapsed.TotalMilliseconds;
         }
 
-        private Int64 GetCurrentKhz()
+        protected override Int64 GetCurrentKhz()
         {
             if (_tickRecordBank[_tickRecordSampleSize] == 0) return 0; // We haven't yet filled up our array so we can't calculate throttling
             var comparerRecord = _tickRecord > _tickRecordSampleSize ? _tickRecord - _tickRecordSampleSize : 0;
@@ -109,7 +109,7 @@ namespace Another6502
             return elapsedTicks / 1000;
         }
 
-        private void RecordTick()
+        protected override void RecordTick()
         {
             _nextTickRecordMs += _tickInterval;
 

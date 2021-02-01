@@ -6,64 +6,71 @@ namespace Another6502
     {
         static void Main(string[] args)
         {
-            //TestClock();
-            //System.Threading.Thread.Sleep(5000);
+            TestClock();
+            System.Threading.Thread.Sleep(3000);
             TestClock2();
-            System.Threading.Thread.Sleep(5000);
+            System.Threading.Thread.Sleep(3000);
         }
 
         static void TestClock()
         {
-            Console.Clear();
-            Console.WriteLine("Testing max Clock object speed");
+            var clocks = new Clock[] {
+                //new Clock(),
+                new ClockMsI(),
+                new ClockTicks()
+            };
 
-            var clock = new Clock();
-            var starttime = DateTime.Now;
-            var endtime = DateTime.Now.AddSeconds(20);
-
-            System.Threading.Thread.Sleep(2000); // Let the system stabalise
-            clock.Start();
-
-
-            Console.WriteLine("Looping for 20sec");
-            Console.SetCursorPosition(0, 4);
-            Console.WriteLine("Ticks\nElapsed Ms\nAve Khz\nAve Mhz\nCur Khz");
-
-            while (clock.ElapsedMilliseconds < 20000)
+            foreach (var clock in clocks)
             {
-                clock.Tick();
-                if ((clock.ElapsedMilliseconds % 500) == 0)
-                {
-                    Console.SetCursorPosition(15, 4);
-                    Console.Write(clock.Ticks);
-                    Console.SetCursorPosition(15, 5);
-                    Console.Write(clock.ElapsedMilliseconds);
-                    Console.SetCursorPosition(15, 6);
-                    Console.Write(clock.AverageKhz);
-                    Console.SetCursorPosition(15, 7);
-                    Console.Write(clock.AverageMhz);
-                    Console.SetCursorPosition(15, 8);
-                    Console.Write(clock.CurrentKhz);
+                Console.Clear();
+                Console.WriteLine(string.Format("Testing max {0} object speed", clock.ToString()));
 
-                    Console.SetCursorPosition(15, 10);
-                    //Console.Write(clock.TickRecordBankSelect);
-                    Console.SetCursorPosition(15, 11);
-                    Console.Write(clock.TickRecord + "     ");
+                var starttime = DateTime.Now;
+                var endtime = DateTime.Now.AddSeconds(10);
+
+                System.Threading.Thread.Sleep(2000); // Let the system stabalise
+                clock.Start();
+
+
+                Console.WriteLine("Looping for 20sec");
+                Console.SetCursorPosition(0, 4);
+                Console.WriteLine("Ticks\nElapsed Ms\nAve Khz\nAve Mhz\nCur Khz");
+
+                while (clock.ElapsedMilliseconds < 10000)
+                {
+                    clock.Tick();
+                    if ((clock.ElapsedMilliseconds % 500) == 0)
+                    {
+                        Console.SetCursorPosition(15, 4);
+                        Console.Write(clock.Ticks);
+                        Console.SetCursorPosition(15, 5);
+                        Console.Write(clock.ElapsedMilliseconds);
+                        Console.SetCursorPosition(15, 6);
+                        Console.Write(clock.AverageKhz);
+                        Console.SetCursorPosition(15, 7);
+                        Console.Write(clock.AverageMhz);
+                        Console.SetCursorPosition(15, 8);
+                        Console.Write(clock.CurrentKhz);
+
+                        Console.SetCursorPosition(15, 10);
+                        //Console.Write(clock.TickRecordBankSelect);
+                        Console.SetCursorPosition(15, 11);
+                        Console.Write(clock.TickRecord + "     ");
+                    }
                 }
 
+                System.Threading.Thread.Sleep(3000);
             }
-
-            System.Threading.Thread.Sleep(5000);
         }
 
         static void TestClock2()
         {
             Console.Clear();
-            Console.WriteLine("Testing max Clock object speed");
+            Console.WriteLine("Testing max ClockMs object speed");
 
             var clock2 = new ClockMs();
             var starttime = DateTime.Now;
-            var endtime = DateTime.Now.AddSeconds(20);
+            var endtime = DateTime.Now.AddSeconds(10);
 
             System.Threading.Thread.Sleep(2000); // Let the system stabalise
             clock2.Start();
@@ -73,7 +80,7 @@ namespace Another6502
             Console.SetCursorPosition(0, 4);
             Console.WriteLine("Ticks\nElapsed Ms\nAve Khz\nAve Mhz\nCur Khz");
 
-            while (clock2.ElapsedMilliseconds < 20000)
+            while (clock2.ElapsedMilliseconds < 10000)
             {
                 clock2.Tick();
                 if ((clock2.ElapsedMilliseconds % 500) == 0)
@@ -94,7 +101,6 @@ namespace Another6502
                     Console.SetCursorPosition(15, 11);
                     Console.Write(clock2.TickRecord + "     ");
                 }
-
             }
         }
     }
