@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Another6502
 {
-    class Clock : IClock
+    class ClockMs : IClock
     {
         Stopwatch _stopwatch;
 
@@ -13,22 +13,22 @@ namespace Another6502
         public float AverageMhz { get { return GetAverageMhz(); } }
         public Int64 CurrentKhz { get { return GetCurrentKhz(); } }
         public Int64 Ticks { get; private set; }
-        public Int64 ElapsedMilliseconds { get { return _stopwatch.ElapsedMilliseconds; } }
+        public Double ElapsedMilliseconds { get { return _stopwatch.ElapsedMilliseconds; } }
         //public Int64 ElapsedTicks { get { return _stopwatch.ElapsedTicks; } }
         public bool IsRunning { get; private set; }
 
-        private int _targetKhz = 8000;
+        private int _targetKhz = 2500;
 
         private static int _tickRecordSize = 20000;
-        private static int _tickRecordSampleSize = 20;
-        private static int _tickInterval = 1000;
+        private static int _tickRecordSampleSize = 4;
+        private static int _tickInterval = 250;
         private int _tickRecord = -1;
-
-        private Double[] _tickRecordBank = new Double[_tickRecordSize];
+        private Int64[] _tickRecordBank = new Int64[_tickRecordSize];
+        private double _nextTickRecordMs = 0;
 
         public Int64 TickRecord { get { return _tickRecord; } }
 
-        public Clock()
+        public ClockMs()
         {
             _stopwatch = new Stopwatch();
             IsRunning = false;
@@ -63,9 +63,9 @@ namespace Another6502
         {
             if (!IsRunning || Throttling()) return;
 
-            if (Ticks % _tickInterval == 0)
+            if (_stopwatch.Elapsed.TotalMilliseconds > _nextTickRecordMs)
                 RecordTick();
-
+            
             Ticks++;
         }
 
@@ -84,38 +84,40 @@ namespace Another6502
         private Int64 GetAverageKhz()
         {
             if (_stopwatch.ElapsedMilliseconds == 0) return 0;
-            return (Int64)(Ticks / _stopwatch.Elapsed.TotalMilliseconds);
+            return Ticks / _stopwatch.ElapsedMilliseconds;
         }
 
         private float GetAverageMhz()
         {
             if (_stopwatch.ElapsedMilliseconds == 0) return 0;
+            //return (Ticks / 1000) / _stopwatch.ElapsedMilliseconds;
             return (Ticks / 1000) / (float)_stopwatch.Elapsed.TotalMilliseconds;
         }
 
         private Int64 GetCurrentKhz()
         {
-            if (_tickRecordBank[_tickRecordSampleSize - 1] == 0) return 0; // We haven't yet filled up our array so we can't calculate throttling
-
-            var comparerTick = _tickRecord > _tickRecordSampleSize ? _tickRecord - _tickRecordSampleSize : 0;
-            var comparerMs = _tickRecordBank[comparerTick];
-            var elapsedMs = _tickRecordBank[_tickRecord] - comparerMs;
+            if (_tickRecordBank[_tickRecordSampleSize] == 0) return 0; // We haven't yet filled up our array so we can't calculate throttling
+            var comparerRecord = _tickRecord > _tickRecordSampleSize ? _tickRecord - _tickRecordSampleSize : 0;
+            var comparerTicks = _tickRecordBank[comparerRecord];
+            var elapsedTicks = _tickRecordBank[_tickRecord] - comparerTicks;
 
             Console.SetCursorPosition(0, 15);
-            Console.WriteLine(string.Format("{0}     {1}    ", comparerTick, _tickRecord));
-            Console.Write(string.Format("{0} {1} {2}", comparerMs, _tickRecordBank[_tickRecord], elapsedMs));
+            Console.WriteLine(string.Format("{0}     {1}    ", comparerRecord, _tickRecord));
+            Console.Write(string.Format("{0} {1} {2}     ", comparerTicks, _tickRecordBank[_tickRecord], elapsedTicks));
             Console.SetCursorPosition(15, 8);
-            
-            return Convert.ToInt64((_tickRecordSampleSize * (double)_tickInterval) / elapsedMs);
+
+            return elapsedTicks / 1000;
         }
 
         private void RecordTick()
         {
+            _nextTickRecordMs += _tickInterval;
+
             if (_tickRecord >= _tickRecordSize - 1)
                 _tickRecord = -1;
 
             _tickRecord++;
-            _tickRecordBank[_tickRecord] = _stopwatch.Elapsed.TotalMilliseconds;
+            _tickRecordBank[_tickRecord] = Ticks;
         }
     }
 }
